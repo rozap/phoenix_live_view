@@ -866,43 +866,42 @@ defmodule Phoenix.LiveView.Channel do
     case Session.verify_session(endpoint, topic, session_token, params["static"]) do
       {:ok, %Session{} = verified} ->
         %Phoenix.Socket{private: %{connect_info: connect_info}} = phx_socket
-
         case connect_info do
-          %{session: nil} ->
-            Logger.debug("""
-            LiveView session was misconfigured or the user token is outdated.
+          # %{session: nil} ->
+          #   Logger.debug("""
+          #   LiveView session was misconfigured or the user token is outdated.
 
-            1) Ensure your session configuration in your endpoint is in a module attribute:
+          #   1) Ensure your session configuration in your endpoint is in a module attribute:
 
-                @session_options [
-                  ...
-                ]
+          #       @session_options [
+          #         ...
+          #       ]
 
-            2) Change the `plug Plug.Session` to use said attribute:
+          #   2) Change the `plug Plug.Session` to use said attribute:
 
-                plug Plug.Session, @session_options
+          #       plug Plug.Session, @session_options
 
-            3) Also pass the `@session_options` to your LiveView socket:
+          #   3) Also pass the `@session_options` to your LiveView socket:
 
-                socket "/live", Phoenix.LiveView.Socket,
-                  websocket: [connect_info: [session: @session_options]]
+          #       socket "/live", Phoenix.LiveView.Socket,
+          #         websocket: [connect_info: [session: @session_options]]
 
-            4) Ensure the `protect_from_forgery` plug is in your router pipeline:
+          #   4) Ensure the `protect_from_forgery` plug is in your router pipeline:
 
-                plug :protect_from_forgery
+          #       plug :protect_from_forgery
 
-            5) Define the CSRF meta tag inside the `<head>` tag in your layout:
+          #   5) Define the CSRF meta tag inside the `<head>` tag in your layout:
 
-                <meta name="csrf-token" content={Plug.CSRFProtection.get_csrf_token()} />
+          #       <meta name="csrf-token" content={Plug.CSRFProtection.get_csrf_token()} />
 
-            6) Pass it forward in your app.js:
+          #   6) Pass it forward in your app.js:
 
-                let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content");
-                let liveSocket = new LiveSocket("/live", Socket, {params: {_csrf_token: csrfToken}});
-            """)
+          #       let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content");
+          #       let liveSocket = new LiveSocket("/live", Socket, {params: {_csrf_token: csrfToken}});
+          #   """)
 
-            GenServer.reply(from, {:error, %{reason: "stale"}})
-            {:stop, :shutdown, :no_state}
+          #   GenServer.reply(from, {:error, %{reason: "stale"}})
+          #   {:stop, :shutdown, :no_state}
 
           %{} ->
             with {:ok, %Session{view: view} = new_verified, route, url} <-
@@ -986,7 +985,7 @@ defmodule Phoenix.LiveView.Channel do
     flash = verify_flash(endpoint, verified, params["flash"], connect_params)
 
     # connect_info is either a Plug.Conn during tests or a Phoenix.Socket map
-    socket_session = Map.get(connect_info, :session, %{})
+    socket_session = Map.get(connect_info, :session, %{}) || %{}
 
     Process.monitor(transport_pid)
     load_csrf_token(endpoint, socket_session)
